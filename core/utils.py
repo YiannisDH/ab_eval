@@ -64,3 +64,17 @@ def generate_random_cvr_data(sample_size, p_control, p_variation, days=None, con
     # convert data into pandas dataframe
     df = pd.DataFrame(data)
     return df
+
+def get_segments_sample_size(df,segment,segment_column='segment'):
+    """
+    This function returns the sample size (int) of a specific segment
+    :param df: the dataframe with the test data
+    :type dataframe
+    :param segment: the name of the segment to calculate the sample size
+    :type segment: string
+    :param segment_column: (optional) the column name that contains the segment information 
+    :type segment_column: string
+    :return sample_size: the sample size of the specific segment
+    """
+
+    return df.loc[df[segment_column] == segment].shape[0]
