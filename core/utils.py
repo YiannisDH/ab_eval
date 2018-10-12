@@ -1,16 +1,11 @@
-import scipy.stats as scs
-import pandas as pd
 import random
 import string
-
-logger = logging.getLogger(__name__)
-# import numpy as np
-
 import logging
 import scipy.stats as scs
 import pandas as pd
 from datetime import datetime, timedelta
 
+logger = logging.getLogger(__name__)
 
 # import numpy as np
 
