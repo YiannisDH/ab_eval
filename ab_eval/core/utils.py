@@ -82,7 +82,7 @@ def get_segments_sample_size(df,segment=None,segment_column='segment'):
     return df.shape[0]
 
 
-def get_test_sammary(df,kpi,segment=None,segment_colum='segment',variations_column='group'):
+def get_test_summary(df,kpi,segment=None,segment_colum='segment',variations_column='group'):
     """
     :param df: the dataframe with the test data
     :type dataframe
