@@ -100,7 +100,7 @@ def get_test_sammary(df,kpi,segment=None,segment_colum='segment',variations_colu
     if segment:
         df= df[df[segment_colum] == segment]
 
-    ab_summary = df[df[segment_colum] == segment].pivot_table(values=kpi, index=variations_column, aggfunc=np.sum)
+    ab_summary = df.pivot_table(values=kpi, index=variations_column, aggfunc=np.sum)
     ab_summary['total'] = df.pivot_table(values=kpi, index=variations_column, aggfunc=lambda x: len(x))
     ab_summary['rate'] = df.pivot_table(values=kpi, index=variations_column)
 
