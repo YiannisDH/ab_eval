@@ -15,4 +15,4 @@ def test_get_test_summary_without_segment():
 def test_get_test_summary_with_segment():
     df=generate_random_cvr_data(1000,0.3,0.5,days=10,control_label='control',variation_label='variation')
     df1=get_test_summary(df,'CVR',segment='new')
-    assert df1['CVR'].control != None
+    assert df1['CVR'].control == df1['CVR'].control #trick with NaN != NaN
