@@ -1,4 +1,4 @@
-from ab_eval.core.experiment import evaluation_metrics , variations
+from ab_eval.core.experiment_components import evaluation_metrics , variations
 
 
 
