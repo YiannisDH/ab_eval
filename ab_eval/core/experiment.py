@@ -43,7 +43,6 @@ class variations(object):
             variation_label='B',
             *args, **kwargs):
         super(variations, self).__init__(*args, **kwargs)
-        #always append the business primary KPI
         self.column_name=column_name
         self.control_label=control_label
         self.variation_label=variation_label
