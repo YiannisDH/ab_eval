@@ -38,11 +38,11 @@ class variations(object):
     """
     def __init__(
             self,
-            column_name,
-            control_label,
-            variation_label,
+            column_name='group',
+            control_label='A',
+            variation_label='B',
             *args, **kwargs):
-        super(evaluation_metrics, self).__init__(*args, **kwargs)
+        super(variations, self).__init__(*args, **kwargs)
         #always append the business primary KPI
         self.column_name=column_name
         self.control_label=control_label
