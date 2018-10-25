@@ -24,6 +24,12 @@ class evaluation_metrics(object):
             kpis.append(primary_KPI)
         self.kpis = kpis
 
+    def get_kpis(self):
+        return  self.kpi
+
+
+    def get_primary_KPI(self):
+        return  self.primary_KPI
 
 
 class variations(object):
@@ -47,4 +53,11 @@ class variations(object):
         self.control_label=control_label
         self.variation_label=variation_label
 
+    def get_column_name(self):
+        return self.column_name
 
+    def get_control_label(self):
+        return self.control_label
+
+    def get_variation_label(self):
+        return self.variation_label
