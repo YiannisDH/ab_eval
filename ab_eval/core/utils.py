@@ -14,19 +14,19 @@ logger = logging.getLogger(__name__)
 def generate_random_cvr_data(sample_size, p_control, p_variation, days=None, control_label='A',
                              variation_label='B'):
     """This function generates fake dataset for an ab test
-    :param: sample_size: sample size of the experament
-    :type: s_size_control: int
-    :param p_control: The conversion rate of the control group (probability to convert)
-    :type p_control: float
-    :param p_variation: The conversion rate of the variation   (probability to convert)
-    :type p_variation: float
-    :param: (optional) days: if provided, a column for 'ts' will be included to divide the data in chunks of time
+    :param:   sample_size: sample size of the experament
+    :type:    s_size_control: int
+    :param    p_control: The conversion rate of the control group (probability to convert)
+    :type     p_control: float
+    :param    p_variation: The conversion rate of the variation   (probability to convert)
+    :type     p_variation: float
+    :param:   (optional) days: if provided, a column for 'ts' will be included to divide the data in chunks of time
             Note: overflow data will be included in an extra day
-    :type: days: integer
-    :param: (optional) control_label: The label of the control group
-    :type: control_label: str
-    :param: (optional) variation_label: The label of the variation
-    :type: variation_label: str
+    :type:  days: integer
+    :param:   (optional) control_label: The label of the control group
+    :type:    control_label: str
+    :param:   (optional) variation_label: The label of the variation
+    :type:    variation_label: str
     :returns: df :dataframe with the generated test data
     :rtype: dataframe
     """
@@ -69,12 +69,12 @@ def generate_random_cvr_data(sample_size, p_control, p_variation, days=None, con
 def get_segments_sample_size(df,segment=None,segment_column='segment'):
     """
     This function returns the sample size (int) of a specific segment
-    :param df: the dataframe with the test data
-    :type dataframe
-    :param segment: (optional) the name of the segment to calculate the sample size
-    :type segment: string
-    :param segment_column: (optional) the column name that contains the segment information 
-    :type segment_column: string
+    :param  df: the dataframe with the test data
+    :type   dataframe
+    :param  segment: (optional) the name of the segment to calculate the sample size
+    :type   segment: string
+    :param  segment_column: (optional) the column name that contains the segment information
+    :type   segment_column: string
     :return sample_size: the sample size of the specific segment
     """
     if segment:
@@ -84,16 +84,16 @@ def get_segments_sample_size(df,segment=None,segment_column='segment'):
 
 def get_test_summary(df,kpi,segment=None,segment_colum='segment',variations_column='group'):
     """
-    :param df: the dataframe with the test data
-    :type dataframe
-    :param kpi: column name that contains the KPI
-    :type kpi: string
-    :param segment: (optional) the name of the segment to calculate the sample size
-    :type segment: string
-    :param segment_column: (optional) the column name that contains the segment information
-    :type segment_column: string
-    :param variations_column: (optional) the column name that contains the variation information
-    :type variations_column: string
+    :param   df: the dataframe with the test data
+    :type    dataframe
+    :param   kpi: column name that contains the KPI
+    :type    kpi: string
+    :param   segment: (optional) the name of the segment to calculate the sample size
+    :type    segment: string
+    :param   segment_column: (optional) the column name that contains the segment information
+    :type    segment_column: string
+    :param   variations_column: (optional) the column name that contains the variation information
+    :type    variations_column: string
     :return: dataframe with test_sammary
     """
 
