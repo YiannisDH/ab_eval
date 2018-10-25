@@ -4,4 +4,4 @@
 ```import ab_eval```
 
 ### to run test do
-```pytest tests/test_utilts.py```
+```pytest tests/```
