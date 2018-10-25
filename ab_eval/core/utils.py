@@ -82,7 +82,7 @@ def get_segments_sample_size(df,segment=None,segment_column='segment'):
     return df.shape[0]
 
 
-def get_test_summary(df,kpi,segment=None,segment_colum='segment',variations_column='group'):
+def get_test_summary(df,kpi,segment=None,segment_column='segment',variations_column='group'):
     """
     :param   df: the dataframe with the test data
     :type    dataframe
@@ -98,7 +98,7 @@ def get_test_summary(df,kpi,segment=None,segment_colum='segment',variations_colu
     """
 
     if segment:
-        df= df[df[segment_colum] == segment]
+        df= df[df[segment_column] == segment]
 
     ab_summary = df.pivot_table(values=kpi, index=variations_column, aggfunc=np.sum)
     ab_summary['total'] = df.pivot_table(values=kpi, index=variations_column, aggfunc=lambda x: len(x))
