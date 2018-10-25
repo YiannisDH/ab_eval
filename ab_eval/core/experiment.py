@@ -1,6 +1,12 @@
 import json
+import logging
 from ab_eval.core.experiment_components import variations,evaluation_metrics
 from ab_eval.core.utils import get_test_summary
+import numpy as np
+import scipy.stats as scs
+
+logger = logging.getLogger(__name__)
+
 
 class experiment(object):
     """
@@ -43,3 +49,18 @@ class experiment(object):
         return json.dumps({'control_label':self.variations.get_control_label(),
                 'variation_label':self.variations.get_control_label()})
 
+
+
+    def get_p_val(self,kpi='CVR',segment=None,segment_column='segment',variation_column='group'):
+        """Method that calculates the p-value for a given dataset and KPI"""
+
+        if kpi not in self.get_expirement_kpis():
+            raise ValueError("Please use a valid KPI. this can be one of the followings: {}"
+                             .format_map(self.get_expirement_kpis()))
+
+        df_summary=get_test_summary(self.data,kpi=kpi,segment=segment,segment_column=segment_column,
+                                    variations_column=variation_column)
+
+        return scs.binom(df_summary['total'][self.variations.variation_label],
+                         df_summary['rate'][self.variations.variation_label])\
+            .pmf( df_summary['rate'][self.variations.control_label]*df_summary['total'][self.variations.control_label])
