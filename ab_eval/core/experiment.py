@@ -19,7 +19,7 @@ class experiment(object):
             data,
             kpis=evaluation_metrics(kpis=["CVR"]),
             variations= variations(),
-            segments=[],
+            segments=None,
             *args, **kwargs):
         super(experiment, self).__init__(*args, **kwargs)
         self.data=data
@@ -42,5 +42,4 @@ class experiment(object):
     def get_experiment_variations(self):
         return json.dumps({'control_label':self.variations.get_control_label(),
                 'variation_label':self.variations.get_control_label()})
-
 
