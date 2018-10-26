@@ -77,4 +77,5 @@ class experiment(object):
                                     variations_column=variation_column)
 
 
-        return (df_summary['rate'][self.variations.variation_label] - df_summary['rate'][self.variations.control_label])/df_summary['rate'][self.variations.control_label]
+        return (df_summary['rate'][self.variations.variation_label] - df_summary['rate'][self.variations.control_label])\
+               /df_summary['rate'][self.variations.control_label]
