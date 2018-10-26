@@ -105,3 +105,30 @@ def get_test_summary(df,kpi,segment=None,segment_column='segment',variations_col
     ab_summary['rate'] = df.pivot_table(values=kpi, index=variations_column)
 
     return ab_summary
+
+
+
+def get_min_sample_size(baseline_cvr,expected_uplift,power=0.8,sig_level=0.05):
+    """
+    Return the minimum sample size that we need for a split test.
+    :param  baseline_cvr: the probability of success for the control group (cvr of control group)]
+    :type   baseline_cvr: float
+    :param  expected_uplift: the expected uplift from the test (absolute value)
+    :type   expected_uplift: float
+    :param  power: (optional) probability of rejecting the null hypothesis when the
+                    null hypothesis is false, typically 0.8
+    :param  sig_level: (optional) the significance level, typically is 0.05 (or 95%)
+    :type   sig_level: float
+    :return: min
+    """
+
+    standard_norm = scs.norm(0, 1)
+    # find Z_beta from desired power
+    Z_beta = standard_norm.ppf(power)
+    # find Z_alpha
+    Z_alpha = standard_norm.ppf(1-sig_level/2)
+    # average of probabilities from both groups
+    pooled_prob = (baseline_cvr + baseline_cvr+expected_uplift) / 2
+    min_sample_size = (2 * pooled_prob * (1 - pooled_prob) * (Z_beta + Z_alpha)**2 / expected_uplift**2)
+
+    return min_sample_size
