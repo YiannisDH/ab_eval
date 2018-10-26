@@ -35,10 +35,11 @@ class experiment(object):
         self.kpis=kpis
         self.variations=variations
         self.segments=segments
-        self.significance_level=significance_level
-
         if significance_level >1:
             raise ValueError("significance_level should be >0 and <1 : {}")
+        self.significance_level=significance_level
+
+
 
     def get_data(self):
         return self.data
