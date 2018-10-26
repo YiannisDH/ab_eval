@@ -19,6 +19,8 @@ class experiment(object):
     :type  variatios: variations
     :param segments: list of segments that will be used for a specific segment evaluation
     :type  segments: list of strings
+    :param significance_level: the significance level that should be used in the experiment
+    :type  significance_level: float
     """
     def __init__(
             self,
@@ -26,12 +28,17 @@ class experiment(object):
             kpis=evaluation_metrics(kpis=["CVR"]),
             variations= variations(),
             segments=None,
+            significance_level=0.05,
             *args, **kwargs):
         super(experiment, self).__init__(*args, **kwargs)
         self.data=data
         self.kpis=kpis
         self.variations=variations
         self.segments=segments
+        self.significance_level=significance_level
+
+        if significance_level >1:
+            raise ValueError("significance_level should be >0 and <1 : {}")
 
     def get_data(self):
         return self.data
@@ -68,7 +75,7 @@ class experiment(object):
 
 
     def get_relative_conversion_uplift(self,kpi='CVR',segment=None,segment_column='segment',variation_column='group'):
-
+        """Method that calculates the relative conversion_uplift"""
         if kpi not in self.get_expirement_kpis():
             raise ValueError("Please use a valid KPI. this can be one of the followings: {}"
                              .format_map(self.get_expirement_kpis()))
@@ -79,3 +86,5 @@ class experiment(object):
 
         return (df_summary['rate'][self.variations.variation_label] - df_summary['rate'][self.variations.control_label])\
                /df_summary['rate'][self.variations.control_label]
+
+
