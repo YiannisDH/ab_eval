@@ -64,3 +64,17 @@ class experiment(object):
         return scs.binom(df_summary['total'][self.variations.variation_label],
                          df_summary['rate'][self.variations.variation_label])\
             .pmf( df_summary['rate'][self.variations.control_label]*df_summary['total'][self.variations.control_label])
+
+
+
+    def get_relative_conversion_uplift(self,kpi='CVR',segment=None,segment_column='segment',variation_column='group'):
+
+        if kpi not in self.get_expirement_kpis():
+            raise ValueError("Please use a valid KPI. this can be one of the followings: {}"
+                             .format_map(self.get_expirement_kpis()))
+
+        df_summary=get_test_summary(self.data,kpi=kpi,segment=segment,segment_column=segment_column,
+                                    variations_column=variation_column)
+
+
+        return (df_summary['rate'][self.variations.variation_label] - df_summary['rate'][self.variations.control_label])/df_summary['rate'][self.variations.control_label]
