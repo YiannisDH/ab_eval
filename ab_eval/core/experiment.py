@@ -1,7 +1,7 @@
 import json
 import logging
 from ab_eval.core.experiment_components import variations,evaluation_metrics
-from ab_eval.core.utils import get_test_summary
+from ab_eval.core.utils import get_test_summary, get_standard_error
 import numpy as np
 import scipy.stats as scs
 
@@ -60,7 +60,17 @@ class experiment(object):
 
 
     def get_p_val(self,kpi='CVR',segment=None,segment_column='segment',variation_column='group'):
-        """Method that calculates the p-value for a given dataset and KPI"""
+        """Method that calculates the p-value for a given dataset and KPI
+
+
+        :param   kpi: the KPI that should be used
+        :param   segment: the segment that should be used
+        :param   segment_column: the column name that contains the segment information
+        :param   variation_column: the column name that contains the variation information
+        :return: the p value
+        :rtype:  float
+
+        """
 
         if kpi not in self.get_expirement_kpis():
             raise ValueError("Please use a valid KPI. this can be one of the followings: {}"
@@ -76,7 +86,15 @@ class experiment(object):
 
 
     def get_relative_conversion_uplift(self,kpi='CVR',segment=None,segment_column='segment',variation_column='group'):
-        """Method that calculates the relative conversion_uplift"""
+        """Method that calculates the relative conversion_uplift
+
+        :param   kpi: the KPI that should be used
+        :param   segment: the segment that should be used
+        :param   segment_column: the column name that contains the segment information
+        :param   variation_column: the column name that contains the variation information
+        :return: the relative conversion uplift
+        :rtype:  float
+        """
         if kpi not in self.get_expirement_kpis():
             raise ValueError("Please use a valid KPI. this can be one of the followings: {}"
                              .format_map(self.get_expirement_kpis()))
@@ -88,4 +106,28 @@ class experiment(object):
         return (df_summary['rate'][self.variations.variation_label] - df_summary['rate'][self.variations.control_label])\
                /df_summary['rate'][self.variations.control_label]
 
+
+    def get_standard_errors_of_test(self,kpi='CVR',segment=None,segment_column='segment',variation_column='group'):
+        """
+        This method is calculating the standard error for variation and control and returns a tuple where the first
+        element as the standard error of control and the second as the standard error of variation
+
+        :param   kpi: the KPI that should be used
+        :param   segment: the segment that should be used
+        :param   segment_column: the column name that contains the segment information
+        :param   variation_column: the column name that contains the variation information
+        :return: standard error for variation and control
+        :rtype:  tuple
+        """
+        if kpi not in self.get_expirement_kpis():
+            raise ValueError("Please use a valid KPI. this can be one of the followings: {}"
+                             .format_map(self.get_expirement_kpis()))
+
+        df_summary=get_test_summary(self.data,kpi=kpi,segment=segment,segment_column=segment_column,
+                                    variations_column=variation_column)
+
+        return (get_standard_error(df_summary['rate'][self.variations.variation_label],
+                                   df_summary['total'][self.variations.variation_label]),
+                get_standard_error(df_summary['rate'][self.variations.control_label],
+                                   df_summary['total'][self.variations.control_label]))
 
