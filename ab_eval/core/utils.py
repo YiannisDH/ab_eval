@@ -138,10 +138,30 @@ def get_standard_error(conversion_probability, sample_size):
     """
     This method gets the conversion_probability and the sample_size and returns the standard error
 
-    :param  conversion_probability: the conversion probability
-    :type   cvr: float
-    :param  sample_size: the sample size
-    :type   sample_size: integer
-    :return:  standard_error
+    :param   conversion_probability: the conversion probability
+    :type    cvr: float
+    :param   sample_size: the sample size
+    :type    sample_size: integer
+    :return: standard_error
     """
     return np.sqrt((conversion_probability * (1 - conversion_probability))) / np.sqrt(sample_size)
+
+
+def z_val(sig_level=0.05, two_tailed=True):
+    """
+    Returns the z value for a given significance level
+
+    :param   sig_level: the significance level
+    :type    sig_level: float
+    :param   two_tailed: true if the evaluation is 2 tailed
+    :type    two_tailed: bool
+    :return: z_val
+    """
+    z_dist = scs.norm()
+    if two_tailed:
+        sig_level = sig_level / 2
+        area = 1 - sig_level
+    else:
+        area = 1 - sig_level
+
+    return z_dist.ppf(area)
