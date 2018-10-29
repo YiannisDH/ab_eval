@@ -1,5 +1,4 @@
 import logging
-from ab_eval.core.utils import get_segments_sample_size , get_test_summary
 
 logger = logging.getLogger(__name__)
 
@@ -18,18 +17,17 @@ class evaluation_metrics(object):
             primary_KPI="CVR",
             *args, **kwargs):
         super(evaluation_metrics, self).__init__(*args, **kwargs)
-        #always append the business primary KPI
-        self.primary_KPI=primary_KPI
-        if not primary_KPI in kpis:
+        # always append the business primary KPI
+        self.primary_KPI = primary_KPI
+        if primary_KPI not in kpis:
             kpis.append(primary_KPI)
         self.kpis = kpis
 
     def get_kpis(self):
-        return  self.kpis
-
+        return self.kpis
 
     def get_primary_KPI(self):
-        return  self.primary_KPI
+        return self.primary_KPI
 
 
 class variations(object):
@@ -49,9 +47,9 @@ class variations(object):
             variation_label='B',
             *args, **kwargs):
         super(variations, self).__init__(*args, **kwargs)
-        self.column_name=column_name
-        self.control_label=control_label
-        self.variation_label=variation_label
+        self.column_name = column_name
+        self.control_label = control_label
+        self.variation_label = variation_label
 
     def get_column_name(self):
         return self.column_name
@@ -61,5 +59,3 @@ class variations(object):
 
     def get_variation_label(self):
         return self.variation_label
-
-
