@@ -74,7 +74,7 @@ class experiment(object):
 
         return scs.binom(df_summary['total'][self.variations.variation_label],
                          df_summary['rate'][self.variations.variation_label])\
-            .pmf(df_summary['rate'][self.variations.control_label]*df_summary['total'][self.variations.control_label])
+            .pmf(df_summary['rate'][self.variations.control_label] * df_summary['total'][self.variations.control_label])
 
     def get_relative_conversion_uplift(self, kpi='CVR', segment=None, segment_column='segment', variation_column='group'):
         """Method that calculates the relative conversion_uplift
