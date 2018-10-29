@@ -1,8 +1,7 @@
 import json
 import logging
-from ab_eval.core.experiment_components import variations,evaluation_metrics
+from ab_eval.core.experiment_components import variations, evaluation_metrics
 from ab_eval.core.utils import get_test_summary, get_standard_error
-import numpy as np
 import scipy.stats as scs
 
 logger = logging.getLogger(__name__)
@@ -26,20 +25,18 @@ class experiment(object):
             self,
             data,
             kpis=evaluation_metrics(kpis=["CVR"]),
-            variations= variations(),
+            variations=variations(),
             segments=None,
             significance_level=0.05,
             *args, **kwargs):
         super(experiment, self).__init__(*args, **kwargs)
-        self.data=data
-        self.kpis=kpis
-        self.variations=variations
-        self.segments=segments
-        if significance_level >1:
+        self.data = data
+        self.kpis = kpis
+        self.variations = variations
+        self.segments = segments
+        if significance_level > 1:
             raise ValueError("significance_level should be >0 and <1 : {}")
-        self.significance_level=significance_level
-
-
+        self.significance_level = significance_level
 
     def get_data(self):
         return self.data
@@ -51,15 +48,12 @@ class experiment(object):
         return self.variations.get_column_name()
 
     def get_segments(self):
-        return  self.segments
+        return self.segments
 
     def get_experiment_variations(self):
-        return json.dumps({'control_label':self.variations.get_control_label(),
-                'variation_label':self.variations.get_control_label()})
+        return json.dumps({'control_label': self.variations.get_control_label(), 'variation_label': self.variations.get_control_label()})
 
-
-
-    def get_p_val(self,kpi='CVR',segment=None,segment_column='segment',variation_column='group'):
+    def get_p_val(self, kpi='CVR', segment=None, segment_column='segment', variation_column='group'):
         """Method that calculates the p-value for a given dataset and KPI
 
 
@@ -76,16 +70,13 @@ class experiment(object):
             raise ValueError("Please use a valid KPI. this can be one of the followings: {}"
                              .format_map(self.get_expirement_kpis()))
 
-        df_summary=get_test_summary(self.data,kpi=kpi,segment=segment,segment_column=segment_column,
-                                    variations_column=variation_column)
+        df_summary = get_test_summary(self.data, kpi=kpi, segment=segment, segment_column=segment_column, variations_column=variation_column)
 
         return scs.binom(df_summary['total'][self.variations.variation_label],
                          df_summary['rate'][self.variations.variation_label])\
-            .pmf( df_summary['rate'][self.variations.control_label]*df_summary['total'][self.variations.control_label])
+            .pmf(df_summary['rate'][self.variations.control_label]*df_summary['total'][self.variations.control_label])
 
-
-
-    def get_relative_conversion_uplift(self,kpi='CVR',segment=None,segment_column='segment',variation_column='group'):
+    def get_relative_conversion_uplift(self, kpi='CVR', segment=None, segment_column='segment', variation_column='group'):
         """Method that calculates the relative conversion_uplift
 
         :param   kpi: the KPI that should be used
@@ -99,15 +90,12 @@ class experiment(object):
             raise ValueError("Please use a valid KPI. this can be one of the followings: {}"
                              .format_map(self.get_expirement_kpis()))
 
-        df_summary=get_test_summary(self.data,kpi=kpi,segment=segment,segment_column=segment_column,
-                                    variations_column=variation_column)
+        df_summary = get_test_summary(self.data, kpi=kpi, segment=segment, segment_column=segment_column, variations_column=variation_column)
 
+        return (df_summary['rate'][self.variations.variation_label] - df_summary['rate'][self.variations.control_label]) / \
+            df_summary['rate'][self.variations.control_label]
 
-        return (df_summary['rate'][self.variations.variation_label] - df_summary['rate'][self.variations.control_label])\
-               /df_summary['rate'][self.variations.control_label]
-
-
-    def get_standard_errors_of_test(self,kpi='CVR',segment=None,segment_column='segment',variation_column='group'):
+    def get_standard_errors_of_test(self, kpi='CVR', segment=None, segment_column='segment', variation_column='group'):
         """
         This method is calculating the standard error for variation and control and returns a tuple where the first
         element as the standard error of control and the second as the standard error of variation
@@ -123,11 +111,9 @@ class experiment(object):
             raise ValueError("Please use a valid KPI. this can be one of the followings: {}"
                              .format_map(self.get_expirement_kpis()))
 
-        df_summary=get_test_summary(self.data,kpi=kpi,segment=segment,segment_column=segment_column,
-                                    variations_column=variation_column)
+        df_summary = get_test_summary(self.data, kpi=kpi, segment=segment, segment_column=segment_column, variations_column=variation_column)
 
         return (get_standard_error(df_summary['rate'][self.variations.variation_label],
                                    df_summary['total'][self.variations.variation_label]),
                 get_standard_error(df_summary['rate'][self.variations.control_label],
                                    df_summary['total'][self.variations.control_label]))
-
