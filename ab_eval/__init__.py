@@ -5,6 +5,5 @@ from __future__ import absolute_import
 import logging.config
 
 from ab_eval.core import *
-
 __all__ = ["core"]
 logging.basicConfig(level=logging.DEBUG)
