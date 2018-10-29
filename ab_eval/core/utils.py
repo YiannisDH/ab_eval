@@ -66,7 +66,8 @@ def generate_random_cvr_data(sample_size, p_control, p_variation, days=None, con
     df = pd.DataFrame(data)
     return df
 
-def get_segments_sample_size(df,segment=None,segment_column='segment'):
+
+def get_segments_sample_size(df, segment=None, segment_column='segment'):
     """
     This function returns the sample size (int) of a specific segment
     :param  df: the dataframe with the test data
@@ -82,7 +83,7 @@ def get_segments_sample_size(df,segment=None,segment_column='segment'):
     return df.shape[0]
 
 
-def get_test_summary(df,kpi,segment=None,segment_column='segment',variations_column='group'):
+def get_test_summary(df, kpi, segment=None, segment_column='segment', variations_column='group'):
     """
     :param   df: the dataframe with the test data
     :type    dataframe
@@ -98,7 +99,7 @@ def get_test_summary(df,kpi,segment=None,segment_column='segment',variations_col
     """
 
     if segment:
-        df= df[df[segment_column] == segment]
+        df = df[df[segment_column] == segment]
 
     ab_summary = df.pivot_table(values=kpi, index=variations_column, aggfunc=np.sum)
     ab_summary['total'] = df.pivot_table(values=kpi, index=variations_column, aggfunc=lambda x: len(x))
@@ -107,8 +108,7 @@ def get_test_summary(df,kpi,segment=None,segment_column='segment',variations_col
     return ab_summary
 
 
-
-def get_min_sample_size(baseline_cvr,expected_uplift,power=0.8,sig_level=0.05):
+def get_min_sample_size(baseline_cvr, expected_uplift, power=0.8, sig_level=0.05):
     """
     Return the minimum sample size that we need for a split test.
     :param  baseline_cvr: the probability of success for the control group (cvr of control group)]
@@ -126,15 +126,15 @@ def get_min_sample_size(baseline_cvr,expected_uplift,power=0.8,sig_level=0.05):
     # find Z_beta from desired power
     Z_beta = standard_norm.ppf(power)
     # find Z_alpha
-    Z_alpha = standard_norm.ppf(1-sig_level/2)
+    Z_alpha = standard_norm.ppf(1 - sig_level / 2)
     # average of probabilities from both groups
-    pooled_prob = (baseline_cvr + baseline_cvr+expected_uplift) / 2
+    pooled_prob = (baseline_cvr + baseline_cvr + expected_uplift) / 2
     min_sample_size = (2 * pooled_prob * (1 - pooled_prob) * (Z_beta + Z_alpha)**2 / expected_uplift**2)
 
     return min_sample_size
 
 
-def get_standard_error(conversion_probability,sample_size):
+def get_standard_error(conversion_probability, sample_size):
     """
     This method gets the conversion_probability and the sample_size and returns the standard error
 
@@ -144,4 +144,4 @@ def get_standard_error(conversion_probability,sample_size):
     :type   sample_size: integer
     :return:  standard_error
     """
-    return np.sqrt((conversion_probability*(1-conversion_probability)))/np.sqrt(sample_size)
+    return np.sqrt((conversion_probability * (1 - conversion_probability))) / np.sqrt(sample_size)
