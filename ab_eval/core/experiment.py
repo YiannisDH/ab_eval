@@ -1,8 +1,9 @@
 import json
 import logging
 from ab_eval.core.experiment_components import variations, evaluation_metrics
-from ab_eval.core.utils import get_test_summary, get_standard_error
+from ab_eval.core.utils import get_test_summary, get_standard_error, get_z_val
 import scipy.stats as scs
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -117,3 +118,29 @@ class experiment(object):
                                    df_summary['total'][self.variations.variation_label]),
                 get_standard_error(df_summary['rate'][self.variations.control_label],
                                    df_summary['total'][self.variations.control_label]))
+
+    def get_confidence_interval_of_test(self, kpi='CVR', segment=None, segment_column='segment', variation_column='group'):
+        """
+        This method returns the confidence_interval of test as tuple. http://onlinestatbook.com/2/estimation/difference_means.html
+        :param   kpi: the KPI that should be used
+        :param   segment: the segment that should be used
+        :param   segment_column: the column name that contains the segment information
+        :param   variation_column: the column name that contains the variation information
+        :return: confidence_interval of the test summary as a tuple
+        """
+
+        if kpi not in self.get_expirement_kpis():
+            raise ValueError("Please use a valid KPI. this can be one of the followings: {}"
+                             .format_map(self.get_expirement_kpis()))
+
+        df_summary = get_test_summary(self.data, kpi=kpi, segment=segment, segment_column=segment_column, variations_column=variation_column)
+
+        M1 = df_summary['rate'][self.variations.variation_label]
+        M2 = df_summary['rate'][self.variations.control_label]
+        z = get_z_val(sig_level=self.significance_level, two_tailed=True)
+        std1, std2 = self.get_standard_errors_of_test(kpi=kpi, segment=segment, segment_column=segment_column, variation_column=variation_column)
+        std1 *= std1
+        std2 *= std2
+        Sm1_m2 = (np.sqrt((std1 + std2 / (2 / (1 / M1 + 1 / M2)))))
+
+        return (M1 - M2 - z * Sm1_m2, M1 - M2 + z * Sm1_m2)
