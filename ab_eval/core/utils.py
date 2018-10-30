@@ -174,3 +174,20 @@ def standard_deviation(conversion_probability):
     :return: standard_deviation
     """
     return np.sqrt((conversion_probability * (1 - conversion_probability)))
+
+
+def confidence_interval(sample_mean=0, sample_std=1, sample_size=1, significance_level=0.05):
+    """
+    Calculates and returns the confidence interval for given sample size and standard deviation
+    :param   sample_mean: the mean of the sample
+    :type    sample_mean: float
+    :param   sample_std: the standard deviation of the sample
+    :type    sample_std: float
+    :param   sample_size: the sample size
+    :type    sample_size: integer
+    :param   significance_level: the significance level
+    :type    significance_level: float
+    :return: confidence_interval
+    """
+
+    return sample_mean - z_val(significance_level) * sample_std / np.sqrt(sample_size)
