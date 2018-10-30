@@ -176,7 +176,7 @@ def standard_deviation(conversion_probability):
     return np.sqrt((conversion_probability * (1 - conversion_probability)))
 
 
-def confidence_interval(sample_mean=0, sample_std=1, sample_size=1, significance_level=0.05):
+def confidence_interval(sample_mean=0, sample_std=1, sample_size=1, significance_level=0.05, two_tailed=True):
     """
     Calculates and returns the confidence interval for given sample size and standard deviation
     :param   sample_mean: the mean of the sample
@@ -187,7 +187,9 @@ def confidence_interval(sample_mean=0, sample_std=1, sample_size=1, significance
     :type    sample_size: integer
     :param   significance_level: the significance level
     :type    significance_level: float
+    :param   two_tailed: true if the evaluation is 2 tailed
+    :type    two_tailed: bool
     :return: confidence_interval
     """
 
-    return sample_mean - z_val(significance_level) * sample_std / np.sqrt(sample_size)
+    return sample_mean - z_val(significance_level,two_tailed) * sample_std / np.sqrt(sample_size)
