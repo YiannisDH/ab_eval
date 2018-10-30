@@ -1,4 +1,4 @@
-from ab_eval.core.utils import generate_random_cvr_data, get_segments_sample_size, get_test_summary, z_val
+from ab_eval.core.utils import generate_random_cvr_data, get_segments_sample_size, get_test_summary, z_val, confidence_interval
 
 
 def test_get_segments_sample_size():
@@ -20,3 +20,7 @@ def test_get_test_summary_with_segment():
 
 def test_z_val():
     assert z_val() == 1.959963984540054
+
+
+def test_confidence_interval():
+    assert confidence_interval() == -1.959963984540054
