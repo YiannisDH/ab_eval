@@ -52,13 +52,13 @@ def generate_random_cvr_data(sample_size, p_control, p_variation, days=None, con
         # assign group based on 50/50 probability and assign values
         group_type = lambda x: control_label if x == 0 else variation_label
         row['group'] = group_type(group_bern.rvs())
-        if row['group'] == 0:
+        if row['group'] == variation_label:
             # assign conversion based on provided parameters
             row['CVR'] = A_bern.rvs()
             row['mCVR1'] = A_bern.rvs()
         else:
             row['CVR'] = B_bern.rvs()
-            row['mCVR1'] = A_bern.rvs()
+            row['mCVR1'] = B_bern.rvs()
 
         data.append(row)
 
@@ -144,10 +144,10 @@ def get_standard_error(conversion_probability, sample_size):
     :type    sample_size: integer
     :return: standard_error
     """
-    return standard_deviation(conversion_probability) / np.sqrt(sample_size)
+    return get_standard_deviation(conversion_probability) / np.sqrt(sample_size)
 
 
-def z_val(sig_level=0.05, two_tailed=True):
+def get_z_val(sig_level=0.05, two_tailed=True):
     """
     Returns the z value for a given significance level
 
@@ -167,7 +167,7 @@ def z_val(sig_level=0.05, two_tailed=True):
     return z_dist.ppf(area)
 
 
-def standard_deviation(conversion_probability):
+def get_standard_deviation(conversion_probability):
     """
     :param   conversion_probability: the conversion probability
     :type    conversion_probability: float
@@ -176,7 +176,7 @@ def standard_deviation(conversion_probability):
     return np.sqrt((conversion_probability * (1 - conversion_probability)))
 
 
-def confidence_interval(sample_mean=0, sample_std=1, sample_size=1, significance_level=0.05, two_tailed=True):
+def get_confidence_interval(sample_mean=0, sample_std=1, sample_size=1, significance_level=0.05, two_tailed=True):
     """
     Calculates and returns the confidence interval for given sample size and standard deviation
     :param   sample_mean: the mean of the sample
@@ -189,7 +189,8 @@ def confidence_interval(sample_mean=0, sample_std=1, sample_size=1, significance
     :type    significance_level: float
     :param   two_tailed: true if the evaluation is 2 tailed
     :type    two_tailed: bool
-    :return: confidence_interval
+    :return: confidence_interval as a tuple
     """
 
-    return sample_mean - z_val(significance_level,two_tailed) * sample_std / np.sqrt(sample_size)
+    return (sample_mean - get_z_val(significance_level, two_tailed) * sample_std / np.sqrt(sample_size),
+            sample_mean + get_z_val(significance_level, two_tailed) * sample_std / np.sqrt(sample_size))
