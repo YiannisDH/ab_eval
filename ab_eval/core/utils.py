@@ -52,7 +52,7 @@ def generate_random_cvr_data(sample_size, p_control, p_variation, days=None, con
         # assign group based on 50/50 probability and assign values
         group_type = lambda x: control_label if x == 0 else variation_label
         row['group'] = group_type(group_bern.rvs())
-        if row['group'] == variation_label:
+        if row['group'] == control_label:
             # assign conversion based on provided parameters
             row['CVR'] = A_bern.rvs()
             row['mCVR1'] = A_bern.rvs()
@@ -176,7 +176,7 @@ def get_standard_deviation(conversion_probability):
     return np.sqrt((conversion_probability * (1 - conversion_probability)))
 
 
-def get_confidence_interval(sample_mean=0, sample_std=1, sample_size=1, significance_level=0.05, two_tailed=True):
+def get_confidence_interval_single_variation(sample_mean=0, sample_std=1, sample_size=1, significance_level=0.05, two_tailed=True):
     """
     Calculates and returns the confidence interval for given sample size and standard deviation
     :param   sample_mean: the mean of the sample
