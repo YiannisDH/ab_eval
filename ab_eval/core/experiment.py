@@ -143,4 +143,4 @@ class experiment(object):
         std2 *= std2
         Sm1_m2 = (np.sqrt((std1 + std2 / (2 / (1 / M1 + 1 / M2)))))
 
-        return (M1 - M2 - z * Sm1_m2, M1 - M2 + z * Sm1_m2)
+        return M1 - M2 - z * Sm1_m2, M1 - M2 + z * Sm1_m2
