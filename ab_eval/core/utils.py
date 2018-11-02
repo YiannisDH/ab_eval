@@ -76,11 +76,17 @@ def generate_random_cvr_data(sample_size, p_control, p_variation, days=None, con
         data = data.drop('visitid', 1)
         data['CVR_sample_size'] = df.pivot_table(values='CVR_converted', index=['group', 'segment', 'date'], aggfunc=lambda x: len(x))
         data['mCVR1_sample_size'] = df.pivot_table(values='mCVR1_converted', index=['group', 'segment', 'date'], aggfunc=lambda x: len(x))
+        data['mCVR2_sample_size'] = df.pivot_table(values='mCVR2_converted', index=['group', 'segment', 'date'], aggfunc=lambda x: len(x))
+        data['mCVR3_sample_size'] = df.pivot_table(values='mCVR3_converted', index=['group', 'segment', 'date'], aggfunc=lambda x: len(x))
+        data['mCVR4_sample_size'] = df.pivot_table(values='mCVR4_converted', index=['group', 'segment', 'date'], aggfunc=lambda x: len(x))
     else:
         data = df.pivot_table(index=['group', 'segment'], aggfunc=np.sum)
         data = data.drop('visitid', 1)
         data['CVR_sample_size'] = df.pivot_table(values='CVR_converted', index=['group', 'segment'], aggfunc=lambda x: len(x))
         data['mCVR1_sample_size'] = df.pivot_table(values='mCVR1_converted', index=['group', 'segment'], aggfunc=lambda x: len(x))
+        data['mCVR2_sample_size'] = df.pivot_table(values='mCVR2_converted', index=['group', 'segment'], aggfunc=lambda x: len(x))
+        data['mCVR3_sample_size'] = df.pivot_table(values='mCVR3_converted', index=['group', 'segment'], aggfunc=lambda x: len(x))
+        data['mCVR4_sample_size'] = df.pivot_table(values='mCVR4_converted', index=['group', 'segment'], aggfunc=lambda x: len(x))
 
     return data.reset_index()
 
