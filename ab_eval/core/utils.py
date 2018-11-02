@@ -85,7 +85,7 @@ def generate_random_cvr_data(sample_size, p_control, p_variation, days=None, con
     return data.reset_index()
 
 
-def get_segments_sample_size(df,kpi, segment=None, segment_column='segment'):
+def get_segments_sample_size(df, kpi, segment=None, segment_column='segment'):
     """
     This function returns the sample size (int) of a specific segment
     :param  df: the dataframe with the test data
