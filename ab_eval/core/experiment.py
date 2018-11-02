@@ -65,7 +65,7 @@ class experiment(object):
         :param   segment_column: the column name that contains the segment information
         :param   variation_column: the column name that contains the variation information
         :return: the p value
-        :rtype:  float
+        :rtype:  dict
 
         """
 
@@ -103,7 +103,7 @@ class experiment(object):
 
     def get_standard_errors_of_test(self, kpi='CVR', segment=None, segment_column='segment', variation_column='group'):
         """
-        This method is calculating the standard error for variation and control and returns a tuple where the first
+        This method is calculating the standard error for variation and control and returns a dict where the first
         element as the standard error of control and the second as the standard error of variation
 
         :param   kpi: the KPI that should be used
@@ -111,7 +111,7 @@ class experiment(object):
         :param   segment_column: the column name that contains the segment information
         :param   variation_column: the column name that contains the variation information
         :return: standard error for variation and control
-        :rtype:  tuple
+        :rtype:  dict
         """
         if kpi not in self.get_expirement_kpis():
             raise ValueError("Please use a valid KPI. this can be one of the followings: {}"
@@ -119,14 +119,14 @@ class experiment(object):
 
         df_summary = get_test_summary(self.data, kpi=kpi, segment=segment, segment_column=segment_column, variations_column=variation_column)
 
-        return (get_standard_error(df_summary['rate'][self.variations.variation_label],
-                                   df_summary['total'][self.variations.variation_label]),
-                get_standard_error(df_summary['rate'][self.variations.control_label],
-                                   df_summary['total'][self.variations.control_label]))
+        return {"control_standard_error": get_standard_error(df_summary['rate'][self.variations.variation_label],
+                                                             df_summary['total'][self.variations.variation_label]),
+                "variation_standard_error": get_standard_error(df_summary['rate'][self.variations.control_label],
+                                                               df_summary['total'][self.variations.control_label])}
 
     def get_confidence_interval_of_test(self, kpi='CVR', segment=None, segment_column='segment', variation_column='group'):
         """
-        This method returns the confidence_interval of test as tuple. http://onlinestatbook.com/2/estimation/difference_means.html
+        This method returns the confidence_interval of test as dict. http://onlinestatbook.com/2/estimation/difference_means.html
         :param   kpi: the KPI that should be used
         :param   segment: the segment that should be used
         :param   segment_column: the column name that contains the segment information
@@ -143,9 +143,11 @@ class experiment(object):
         M1 = df_summary['rate'][self.variations.variation_label]
         M2 = df_summary['rate'][self.variations.control_label]
         z = get_z_val(sig_level=self.significance_level, two_tailed=True if self.alternative == 'two-sided' else False)
-        std1, std2 = self.get_standard_errors_of_test(kpi=kpi, segment=segment, segment_column=segment_column, variation_column=variation_column)
+        errors = self.get_standard_errors_of_test(kpi=kpi, segment=segment, segment_column=segment_column, variation_column=variation_column)
+        std1 = errors.get('control_standard_error')
+        std2 = errors.get('variation_standard_error')
         std1 *= std1
         std2 *= std2
         Sm1_m2 = (np.sqrt((std1 + std2 / (2 / (1 / M1 + 1 / M2)))))
 
-        return M1 - M2 - z * Sm1_m2, M1 - M2 + z * Sm1_m2
+        return {"lower_limit": M1 - M2 - z * Sm1_m2, "upper_limit": M1 - M2 + z * Sm1_m2}
