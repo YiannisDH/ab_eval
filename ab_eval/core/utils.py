@@ -54,24 +54,44 @@ def generate_random_cvr_data(sample_size, p_control, p_variation, days=None, con
         row['group'] = group_type(group_bern.rvs())
         if row['group'] == control_label:
             # assign conversion based on provided parameters
-            row['CVR'] = A_bern.rvs()
-            row['mCVR1'] = A_bern.rvs()
+            row['CVR_converted'] = A_bern.rvs()
+            row['mCVR1_converted'] = A_bern.rvs()
+            row['mCVR2_converted'] = A_bern.rvs()
+            row['mCVR3_converted'] = A_bern.rvs()
+            row['mCVR4_converted'] = A_bern.rvs()
         else:
-            row['CVR'] = B_bern.rvs()
-            row['mCVR1'] = B_bern.rvs()
+            row['CVR_converted'] = B_bern.rvs()
+            row['mCVR1_converted'] = B_bern.rvs()
+            row['mCVR2_converted'] = B_bern.rvs()
+            row['mCVR3_converted'] = B_bern.rvs()
+            row['mCVR4_converted'] = B_bern.rvs()
 
         data.append(row)
 
-    # convert data into pandas dataframe
+    # convert data into pandas dataframe and transform
     df = pd.DataFrame(data)
-    return df
+
+    if days is not None:
+        data = df.pivot_table(index=['group', 'segment', 'date'], aggfunc=np.sum)
+        data = data.drop('visitid', 1)
+        data['CVR_sample_size'] = df.pivot_table(values='CVR_converted', index=['group', 'segment', 'date'], aggfunc=lambda x: len(x))
+        data['mCVR1_sample_size'] = df.pivot_table(values='mCVR1_converted', index=['group', 'segment', 'date'], aggfunc=lambda x: len(x))
+    else:
+        data = df.pivot_table(index=['group', 'segment'], aggfunc=np.sum)
+        data = data.drop('visitid', 1)
+        data['CVR_sample_size'] = df.pivot_table(values='CVR_converted', index=['group', 'segment'], aggfunc=lambda x: len(x))
+        data['mCVR1_sample_size'] = df.pivot_table(values='mCVR1_converted', index=['group', 'segment'], aggfunc=lambda x: len(x))
+
+    return data.reset_index()
 
 
-def get_segments_sample_size(df, segment=None, segment_column='segment'):
+def get_segments_sample_size(df,kpi, segment=None, segment_column='segment'):
     """
     This function returns the sample size (int) of a specific segment
     :param  df: the dataframe with the test data
     :type   dataframe
+    :param   kpi: column name that contains the KPI
+    :type    kpi: string
     :param  segment: (optional) the name of the segment to calculate the sample size
     :type   segment: string
     :param  segment_column: (optional) the column name that contains the segment information
@@ -79,8 +99,8 @@ def get_segments_sample_size(df, segment=None, segment_column='segment'):
     :return sample_size: the sample size of the specific segment
     """
     if segment:
-        return df.loc[df[segment_column] == segment].shape[0]
-    return df.shape[0]
+        return df[df[segment_column] == segment]['{}_sample_size'.format(kpi)].sum()
+    return df['{}_sample_size'.format(kpi)].sum()
 
 
 def get_test_summary(df, kpi, segment=None, segment_column='segment', variations_column='group'):
@@ -101,11 +121,12 @@ def get_test_summary(df, kpi, segment=None, segment_column='segment', variations
     if segment:
         df = df[df[segment_column] == segment]
 
-    ab_summary = df.pivot_table(values=kpi, index=variations_column, aggfunc=np.sum)
-    ab_summary['total'] = df.pivot_table(values=kpi, index=variations_column, aggfunc=lambda x: len(x))
-    ab_summary['rate'] = df.pivot_table(values=kpi, index=variations_column)
+    df1 = df.pivot_table(index=variations_column, aggfunc=np.sum)
+    df2 = df1.pivot_table(values=['{}_converted'.format(kpi), '{}_sample_size'.format(kpi)], index=variations_column, aggfunc=np.sum)
+    df2['rate'] = df2['{}_converted'.format(kpi)] / df2['{}_sample_size'.format(kpi)]
+    df2 = df2.rename(index=str, columns={'{}_converted'.format(kpi): kpi, '{}_sample_size'.format(kpi): 'total'})
 
-    return ab_summary
+    return df2
 
 
 def get_min_sample_size(baseline_cvr, expected_uplift, power=0.8, sig_level=0.05):
