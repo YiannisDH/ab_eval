@@ -61,9 +61,13 @@ class experiment(object):
 
 
         :param   kpi: the KPI that should be used
+        :type    kpi: str
         :param   segment: the segment that should be used
+        :type    segment: str
         :param   segment_column: the column name that contains the segment information
+        :type    segment_column: str
         :param   variation_column: the column name that contains the variation information
+        :type    variation_column
         :return: the p value
         :rtype:  dict
 
@@ -86,9 +90,13 @@ class experiment(object):
         """Method that calculates the relative conversion_uplift
 
         :param   kpi: the KPI that should be used
+        :type    kpi: str
         :param   segment: the segment that should be used
+        :type    segment: str
         :param   segment_column: the column name that contains the segment information
+        :type    segment_column: str
         :param   variation_column: the column name that contains the variation information
+        :type    variation_column
         :return: the relative conversion uplift
         :rtype:  float
         """
@@ -107,9 +115,13 @@ class experiment(object):
         element as the standard error of control and the second as the standard error of variation
 
         :param   kpi: the KPI that should be used
+        :type    kpi: str
         :param   segment: the segment that should be used
+        :type    segment: str
         :param   segment_column: the column name that contains the segment information
+        :type    segment_column: str
         :param   variation_column: the column name that contains the variation information
+        :type    variation_column
         :return: standard error for variation and control
         :rtype:  dict
         """
@@ -128,10 +140,15 @@ class experiment(object):
         """
         This method returns the confidence_interval of test as dict. http://onlinestatbook.com/2/estimation/difference_means.html
         :param   kpi: the KPI that should be used
+        :type    kpi: str
         :param   segment: the segment that should be used
+        :type    segment: str
         :param   segment_column: the column name that contains the segment information
+        :type    segment_column: str
         :param   variation_column: the column name that contains the variation information
+        :type    variation_column
         :return: confidence_interval of the test summary as a tuple
+        :rtype:  json
         """
 
         if kpi not in self.get_expirement_kpis():
@@ -151,3 +168,49 @@ class experiment(object):
         Sm1_m2 = (np.sqrt((std1 + std2 / (2 / (1 / M1 + 1 / M2)))))
 
         return {"lower_limit": M1 - M2 - z * Sm1_m2, "upper_limit": M1 - M2 + z * Sm1_m2}
+
+    def analyze(self, kpis=None, analyze_segments=False):
+        """
+        Method to analyze the experiment. It returns a json object with the results
+        :param   kpis: The kpis that needs to evaluate if null it evaluates all
+        :type    kpis: list
+        :param   analyze_segments: True to analyze also each segment
+        :type    analyze_segments: bool
+        :return: results as json
+        :rtype:  json
+        """
+
+        result_dict = {}
+
+        for kpi in self.kpis.get_kpis() if kpis is None else kpis:
+            results = []
+            kpi_eval = {
+                'all':
+                    {
+                        'results':
+                            {
+                                "test": self.get_p_val(kpi=kpi),
+                                "relative_conversion_uplift": self.get_relative_conversion_uplift(kpi=kpi),
+                                "standard_errors": self.get_standard_errors_of_test(kpi=kpi),
+                                "confidence_interval": self.get_confidence_interval_of_test(kpi=kpi)
+                            }
+                    }
+            }
+            results.append(kpi_eval)
+            for segment in self.segments if analyze_segments else []:
+                kpi_eval = {
+                    segment:
+                        {
+                            'results':
+                                {
+                                    "test": self.get_p_val(kpi=kpi, segment=segment),
+                                    "relative_conversion_uplift": self.get_relative_conversion_uplift(kpi=kpi, segment=segment),
+                                    "standard_errors": self.get_standard_errors_of_test(kpi=kpi, segment=segment),
+                                    "confidence_interval": self.get_confidence_interval_of_test(kpi=kpi, segment=segment)
+                                }
+                        }
+                }
+                results.append(kpi_eval)
+            result_dict[kpi] = results
+
+        return json.dumps(result_dict)
