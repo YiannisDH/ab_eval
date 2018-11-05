@@ -1,3 +1,4 @@
+import simplejson
 import json
 import logging
 from ab_eval.core.experiment_components import variations, evaluation_metrics
@@ -56,7 +57,7 @@ class experiment(object):
     def get_experiment_variations(self):
         return json.dumps({'control_label': self.variations.get_control_label(), 'variation_label': self.variations.get_control_label()})
 
-    def get_p_val(self, kpi='CVR', segment=None, segment_column='segment', variation_column='group'):
+    def get_p_val(self, kpi='CVR', segment=None, segment_column='segment', date=None):
         """Method that calculates the p-value for a given dataset and KPI
 
 
@@ -68,6 +69,8 @@ class experiment(object):
         :type    segment_column: str
         :param   variation_column: the column name that contains the variation information
         :type    variation_column
+        :param   date: if date is given (format '%Y%m%d') then the check will happen up to that date
+        :type    date: string ('%Y%m%d')
         :return: the p value
         :rtype:  dict
 
@@ -77,7 +80,12 @@ class experiment(object):
             raise ValueError("Please use a valid KPI. this can be one of the followings: {}"
                              .format_map(self.get_expirement_kpis()))
 
-        df_summary = get_test_summary(self.data, kpi=kpi, segment=segment, segment_column=segment_column, variations_column=variation_column)
+        if date is None:
+            df_summary = get_test_summary(self.data, kpi=kpi, segment=segment, segment_column=segment_column,
+                                          variations_column=self.variations.get_column_name())
+        else:
+            df_summary = get_test_summary(self.data[self.data['date'] <= date], kpi=kpi, segment=segment, segment_column=segment_column,
+                                          variations_column=self.variations.get_column_name())
 
         zscore, pval = sm.stats.proportions_ztest([df_summary[kpi][self.variations.variation_label], df_summary[kpi][self.variations.control_label]],
                                                   [df_summary['total'][self.variations.variation_label],
@@ -86,7 +94,7 @@ class experiment(object):
 
         return {"z-score": zscore, 'p-value': pval}
 
-    def get_relative_conversion_uplift(self, kpi='CVR', segment=None, segment_column='segment', variation_column='group'):
+    def get_relative_conversion_uplift(self, kpi='CVR', segment=None, segment_column='segment', date=None):
         """Method that calculates the relative conversion_uplift
 
         :param   kpi: the KPI that should be used
@@ -97,6 +105,8 @@ class experiment(object):
         :type    segment_column: str
         :param   variation_column: the column name that contains the variation information
         :type    variation_column
+        :param   date: if date is given (format '%Y%m%d') then the check will happen up to that date
+        :type    date: string ('%Y%m%d')
         :return: the relative conversion uplift
         :rtype:  float
         """
@@ -104,12 +114,17 @@ class experiment(object):
             raise ValueError("Please use a valid KPI. this can be one of the followings: {}"
                              .format_map(self.get_expirement_kpis()))
 
-        df_summary = get_test_summary(self.data, kpi=kpi, segment=segment, segment_column=segment_column, variations_column=variation_column)
+        if date is None:
+            df_summary = get_test_summary(self.data, kpi=kpi, segment=segment, segment_column=segment_column,
+                                          variations_column=self.variations.get_column_name())
+        else:
+            df_summary = get_test_summary(self.data[self.data['date'] <= date], kpi=kpi, segment=segment, segment_column=segment_column,
+                                          variations_column=self.variations.get_column_name())
 
         return (df_summary['rate'][self.variations.variation_label] - df_summary['rate'][self.variations.control_label]) / \
             df_summary['rate'][self.variations.control_label]
 
-    def get_standard_errors_of_test(self, kpi='CVR', segment=None, segment_column='segment', variation_column='group'):
+    def get_standard_errors_of_test(self, kpi='CVR', segment=None, segment_column='segment', date=None):
         """
         This method is calculating the standard error for variation and control and returns a dict where the first
         element as the standard error of control and the second as the standard error of variation
@@ -122,6 +137,8 @@ class experiment(object):
         :type    segment_column: str
         :param   variation_column: the column name that contains the variation information
         :type    variation_column
+        :param   date: if date is given (format '%Y%m%d') then the check will happen up to that date
+        :type    date: string ('%Y%m%d')
         :return: standard error for variation and control
         :rtype:  dict
         """
@@ -129,14 +146,19 @@ class experiment(object):
             raise ValueError("Please use a valid KPI. this can be one of the followings: {}"
                              .format_map(self.get_expirement_kpis()))
 
-        df_summary = get_test_summary(self.data, kpi=kpi, segment=segment, segment_column=segment_column, variations_column=variation_column)
+        if date is None:
+            df_summary = get_test_summary(self.data, kpi=kpi, segment=segment, segment_column=segment_column,
+                                          variations_column=self.variations.get_column_name())
+        else:
+            df_summary = get_test_summary(self.data[self.data['date'] <= date], kpi=kpi, segment=segment, segment_column=segment_column,
+                                          variations_column=self.variations.get_column_name())
 
         return {"control_standard_error": get_standard_error(df_summary['rate'][self.variations.variation_label],
                                                              df_summary['total'][self.variations.variation_label]),
                 "variation_standard_error": get_standard_error(df_summary['rate'][self.variations.control_label],
                                                                df_summary['total'][self.variations.control_label])}
 
-    def get_confidence_interval_of_test(self, kpi='CVR', segment=None, segment_column='segment', variation_column='group'):
+    def get_confidence_interval_of_test(self, kpi='CVR', segment=None, segment_column='segment', date=None):
         """
         This method returns the confidence_interval of test as dict. http://onlinestatbook.com/2/estimation/difference_means.html
         :param   kpi: the KPI that should be used
@@ -147,6 +169,8 @@ class experiment(object):
         :type    segment_column: str
         :param   variation_column: the column name that contains the variation information
         :type    variation_column
+        :param   date: if date is given (format '%Y%m%d') then the check will happen up to that date
+        :type    date: string ('%Y%m%d')
         :return: confidence_interval of the test summary as a tuple
         :rtype:  json
         """
@@ -155,12 +179,17 @@ class experiment(object):
             raise ValueError("Please use a valid KPI. this can be one of the followings: {}"
                              .format_map(self.get_expirement_kpis()))
 
-        df_summary = get_test_summary(self.data, kpi=kpi, segment=segment, segment_column=segment_column, variations_column=variation_column)
+        if date is None:
+            df_summary = get_test_summary(self.data, kpi=kpi, segment=segment, segment_column=segment_column,
+                                          variations_column=self.variations.get_column_name())
+        else:
+            df_summary = get_test_summary(self.data[self.data['date'] <= date], kpi=kpi, segment=segment, segment_column=segment_column,
+                                          variations_column=self.variations.get_column_name())
 
         M1 = df_summary['rate'][self.variations.variation_label]
         M2 = df_summary['rate'][self.variations.control_label]
         z = get_z_val(sig_level=self.significance_level, two_tailed=True if self.alternative == 'two-sided' else False)
-        errors = self.get_standard_errors_of_test(kpi=kpi, segment=segment, segment_column=segment_column, variation_column=variation_column)
+        errors = self.get_standard_errors_of_test(kpi=kpi, segment=segment, segment_column=segment_column)
         std1 = errors.get('control_standard_error')
         std2 = errors.get('variation_standard_error')
         std1 *= std1
@@ -169,7 +198,7 @@ class experiment(object):
 
         return {"lower_limit": M1 - M2 - z * Sm1_m2, "upper_limit": M1 - M2 + z * Sm1_m2}
 
-    def analyze(self, kpis=None, analyze_segments=False):
+    def analyze(self, kpis=None, analyze_segments=False, date=None):
         """
         Method to analyze the experiment. It returns a json object with the results
         :param   kpis: The kpis that needs to evaluate if null it evaluates all
@@ -183,34 +212,34 @@ class experiment(object):
         result_dict = {}
 
         for kpi in self.kpis.get_kpis() if kpis is None else kpis:
-            results = []
+            results = {}
             kpi_eval = {
                 'all':
                     {
                         'results':
                             {
                                 "test": self.get_p_val(kpi=kpi),
-                                "relative_conversion_uplift": self.get_relative_conversion_uplift(kpi=kpi),
-                                "standard_errors": self.get_standard_errors_of_test(kpi=kpi),
-                                "confidence_interval": self.get_confidence_interval_of_test(kpi=kpi)
+                                "relative_conversion_uplift": self.get_relative_conversion_uplift(kpi=kpi, date=date),
+                                "standard_errors": self.get_standard_errors_of_test(kpi=kpi, date=date),
+                                "confidence_interval": self.get_confidence_interval_of_test(kpi=kpi, date=date)
                             }
                     }
             }
-            results.append(kpi_eval)
+            results.update(kpi_eval)
             for segment in self.segments if analyze_segments else []:
                 kpi_eval = {
                     segment:
                         {
                             'results':
                                 {
-                                    "test": self.get_p_val(kpi=kpi, segment=segment),
-                                    "relative_conversion_uplift": self.get_relative_conversion_uplift(kpi=kpi, segment=segment),
-                                    "standard_errors": self.get_standard_errors_of_test(kpi=kpi, segment=segment),
-                                    "confidence_interval": self.get_confidence_interval_of_test(kpi=kpi, segment=segment)
+                                    "test": self.get_p_val(kpi=kpi, segment=segment, date=date),
+                                    "relative_conversion_uplift": self.get_relative_conversion_uplift(kpi=kpi, segment=segment, date=date),
+                                    "standard_errors": self.get_standard_errors_of_test(kpi=kpi, segment=segment, date=date),
+                                    "confidence_interval": self.get_confidence_interval_of_test(kpi=kpi, segment=segment, date=date)
                                 }
                         }
                 }
-                results.append(kpi_eval)
+                results.update(kpi_eval)
             result_dict[kpi] = results
 
-        return json.dumps(result_dict)
+        return simplejson.dumps(result_dict, ignore_nan=True)
