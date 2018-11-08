@@ -36,7 +36,7 @@ class experiment(object):
             date_column='date',
             *args, **kwargs):
         super(experiment, self).__init__(*args, **kwargs)
-        self.data = data
+        self.data = experiment.transform_date_column(data, date_column)
         self.kpis = kpis
         self.variations = variations
         self.segments = segments
@@ -45,6 +45,11 @@ class experiment(object):
         if significance_level > 1:
             raise ValueError("significance_level should be >0 and <1 : {}")
         self.significance_level = significance_level
+
+    @staticmethod
+    def transform_date_column(df, date_column):
+        df[date_column] = df[date_column].astype(str)
+        return df
 
     def get_data(self):
         return self.data
@@ -310,7 +315,7 @@ class experiment(object):
         unique_dates = self.data[self.date_column].unique()
         analyze_history = {}
         for date in unique_dates:
-            analyze_history[date] = json.loads(self.analyze(kpis=kpis, analyze_segments=analyze_segments, date=date))
+                analyze_history[date] = json.loads(self.analyze(kpis=kpis, analyze_segments=analyze_segments, date=date))
 
         today_summary = json.loads(self.analyze(kpis=kpis, analyze_segments=analyze_segments))
 
@@ -323,3 +328,14 @@ class experiment(object):
                     today_summary[kpi][segment]['history'][date] = analyze_history[date][kpi][segment]['results']
 
         return simplejson.dumps(today_summary, ignore_nan=True)
+
+    def is_valid(self):
+        """
+        Checks if the experiment is valid over time. A valid experiment over time should have for all days variation and control
+        :return: true or false
+        :rtype:  bool
+        """
+        if (set(self.data[self.variations.column_name]) == {self.variations.variation_label, self.variations.control_label})\
+                and (self.data[self.variations.column_name].nunique() * self.data[self.date_column].nunique() == len(self.data.index)):
+            return True
+        return False
