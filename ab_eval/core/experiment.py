@@ -198,15 +198,19 @@ class experiment(object):
                                           variations_column=self.variations.get_column_name())
 
         return {
-            self.variations.variation_label:
+            'variation':
                 {
+                    "label":
+                        self.variations.variation_label,
                     "sessions":
                         float(df_summary['total'][self.variations.variation_label]),
                     'conversions':
                         float(df_summary[kpi][self.variations.variation_label])
                 },
-            self.variations.control_label:
+            'control':
                 {
+                    "label":
+                        self.variations.control_label,
                     "sessions":
                         float(df_summary['total'][self.variations.control_label]),
                     'conversions':
@@ -265,41 +269,37 @@ class experiment(object):
         :rtype:  json
         """
 
-        result_dict = {}
-
+        results = []
         for kpi in self.kpis.get_kpis() if kpis is None else kpis:
-            results = {}
+
             kpi_eval = {
-                'all':
+                'kpi': kpi,
+                'segment': 'all',
+                'summary':
                     {
-                        'results':
-                            {
-                                "test": self.get_p_val(kpi=kpi, date=date),
-                                "relative_conversion_uplift": self.get_relative_conversion_uplift(kpi=kpi, date=date),
-                                "standard_errors": self.get_standard_errors_of_test(kpi=kpi, date=date),
-                                "confidence_interval": self.get_confidence_interval_of_test(kpi=kpi, date=date),
-                                "summary": self.get_summary(kpi=kpi, date=date)
-                            }
+                        "test": self.get_p_val(kpi=kpi, date=date),
+                        "relative_conversion_uplift": self.get_relative_conversion_uplift(kpi=kpi, date=date),
+                        "standard_errors": self.get_standard_errors_of_test(kpi=kpi, date=date),
+                        "confidence_interval": self.get_confidence_interval_of_test(kpi=kpi, date=date),
+                        "volumes": self.get_summary(kpi=kpi, date=date)
                     }
             }
-            results.update(kpi_eval)
+            results.append(kpi_eval)
             for segment in self.segments if analyze_segments else []:
                 kpi_eval = {
-                    segment:
+                    'kpi': kpi,
+                    'segment': segment,
+                    'summary':
                         {
-                            'results':
-                                {
-                                    "test": self.get_p_val(kpi=kpi, segment=segment, date=date),
-                                    "relative_conversion_uplift": self.get_relative_conversion_uplift(kpi=kpi, segment=segment, date=date),
-                                    "standard_errors": self.get_standard_errors_of_test(kpi=kpi, segment=segment, date=date),
-                                    "confidence_interval": self.get_confidence_interval_of_test(kpi=kpi, segment=segment, date=date),
-                                    "summary": self.get_summary(kpi=kpi, segment=segment, date=date)
-                                }
+                            "test": self.get_p_val(kpi=kpi, segment=segment, date=date),
+                            "relative_conversion_uplift": self.get_relative_conversion_uplift(kpi=kpi, segment=segment, date=date),
+                            "standard_errors": self.get_standard_errors_of_test(kpi=kpi, segment=segment, date=date),
+                            "confidence_interval": self.get_confidence_interval_of_test(kpi=kpi, segment=segment, date=date),
+                            "volumes": self.get_summary(kpi=kpi, segment=segment, date=date)
                         }
                 }
-                results.update(kpi_eval)
-            result_dict[kpi] = results
-        return simplejson.dumps(result_dict, ignore_nan=True)
+                results.append(kpi_eval)
+        return simplejson.dumps(results, ignore_nan=True)
 
     def analyze_historycally(self, kpis=None, analyze_segments=False):
         """
@@ -314,18 +314,16 @@ class experiment(object):
 
         unique_dates = self.data[self.date_column].unique()
         analyze_history = {}
+        today_summary = json.loads(self.analyze(kpis=kpis, analyze_segments=analyze_segments))
         for date in unique_dates:
                 analyze_history[date] = json.loads(self.analyze(kpis=kpis, analyze_segments=analyze_segments, date=date))
-
-        today_summary = json.loads(self.analyze(kpis=kpis, analyze_segments=analyze_segments))
-
-        for date in analyze_history:
-            for kpi in analyze_history[date]:
-
-                for segment in analyze_history[date][kpi]:
-                    if 'history' not in today_summary[kpi][segment].keys():
-                        today_summary[kpi][segment]['history'] = {}
-                    today_summary[kpi][segment]['history'][date] = analyze_history[date][kpi][segment]['results']
+                for i in today_summary:
+                    for j in analyze_history[date]:
+                        if j['kpi'] == i['kpi'] and i['segment'] == j['segment']:
+                            if 'history' not in i.keys():
+                                i['history'] = []
+                            j['summary']['date'] = date
+                            i['history'].append(j['summary'])
 
         return simplejson.dumps(today_summary, ignore_nan=True)
 
