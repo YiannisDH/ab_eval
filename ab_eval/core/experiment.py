@@ -301,7 +301,7 @@ class experiment(object):
                 results.append(kpi_eval)
         return simplejson.dumps(results, ignore_nan=True)
 
-    def analyze_historycally(self, kpis=None, analyze_segments=False):
+    def analyze_historically(self, kpis=None, analyze_segments=False):
         """
         Method to analyze the experiment. It returns a json object with the results
         :param   kpis: The kpis that needs to evaluate if null it evaluates all
@@ -313,19 +313,65 @@ class experiment(object):
         """
 
         unique_dates = self.data[self.date_column].unique()
-        analyze_history = {}
-        today_summary = json.loads(self.analyze(kpis=kpis, analyze_segments=analyze_segments))
-        for date in unique_dates:
-                analyze_history[date] = json.loads(self.analyze(kpis=kpis, analyze_segments=analyze_segments, date=date))
-                for i in today_summary:
-                    for j in analyze_history[date]:
-                        if j['kpi'] == i['kpi'] and i['segment'] == j['segment']:
-                            if 'history' not in i.keys():
-                                i['history'] = []
-                            j['summary']['date'] = date
-                            i['history'].append(j['summary'])
 
-        return simplejson.dumps(today_summary, ignore_nan=True)
+        results = []
+        for kpi in self.kpis.get_kpis() if kpis is None else kpis:
+            summary = {
+                'summary':
+                    {
+                        "test": self.get_p_val(kpi=kpi),
+                        "relative_conversion_uplift": self.get_relative_conversion_uplift(kpi=kpi),
+                        "standard_errors": self.get_standard_errors_of_test(kpi=kpi),
+                        "confidence_interval": self.get_confidence_interval_of_test(kpi=kpi),
+                        "volumes": self.get_summary(kpi=kpi)
+                    }
+            }
+            history = []
+            for date in unique_dates:
+                daily_results = {
+                    "date": date,
+                    "test": self.get_p_val(kpi=kpi, date=date),
+                    "relative_conversion_uplift": self.get_relative_conversion_uplift(kpi=kpi, date=date),
+                    "standard_errors": self.get_standard_errors_of_test(kpi=kpi, date=date),
+                    "confidence_interval": self.get_confidence_interval_of_test(kpi=kpi, date=date),
+                    "volumes": self.get_summary(kpi=kpi, date=date)
+                }
+                history.append(daily_results)
+
+            results.append({
+                'kpi': kpi,
+                'segment': 'all',
+                'summary': summary,
+                'history': history
+            })
+
+            for segment in self.segments if analyze_segments else []:
+                summary = {
+                    "test": self.get_p_val(kpi=kpi),
+                    "relative_conversion_uplift": self.get_relative_conversion_uplift(kpi=kpi, segment=segment),
+                    "standard_errors": self.get_standard_errors_of_test(kpi=kpi, segment=segment),
+                    "confidence_interval": self.get_confidence_interval_of_test(kpi=kpi, segment=segment),
+                    "volumes": self.get_summary(kpi=kpi, segment=segment)
+                }
+                history = []
+                for date in unique_dates:
+                    daily_results = {
+                        "date": date,
+                        "test": self.get_p_val(kpi=kpi, date=date, segment=segment),
+                        "relative_conversion_uplift": self.get_relative_conversion_uplift(kpi=kpi, date=date, segment=segment),
+                        "standard_errors": self.get_standard_errors_of_test(kpi=kpi, date=date, segment=segment),
+                        "confidence_interval": self.get_confidence_interval_of_test(kpi=kpi, date=date, segment=segment),
+                        "volumes": self.get_summary(kpi=kpi, date=date, segment=segment)
+                    }
+                    history.append(daily_results)
+
+                results.append({
+                    'kpi': kpi,
+                    'segment': segment,
+                    'summary': summary,
+                    'history': history
+                })
+        return simplejson.dumps(results, ignore_nan=True)
 
     def is_valid(self):
         """
