@@ -317,14 +317,11 @@ class experiment(object):
         results = []
         for kpi in self.kpis.get_kpis() if kpis is None else kpis:
             summary = {
-                'summary':
-                    {
-                        "test": self.get_p_val(kpi=kpi),
-                        "relative_conversion_uplift": self.get_relative_conversion_uplift(kpi=kpi),
-                        "standard_errors": self.get_standard_errors_of_test(kpi=kpi),
-                        "confidence_interval": self.get_confidence_interval_of_test(kpi=kpi),
-                        "volumes": self.get_summary(kpi=kpi)
-                    }
+                "test": self.get_p_val(kpi=kpi),
+                "relative_conversion_uplift": self.get_relative_conversion_uplift(kpi=kpi),
+                "standard_errors": self.get_standard_errors_of_test(kpi=kpi),
+                "confidence_interval": self.get_confidence_interval_of_test(kpi=kpi),
+                "volumes": self.get_summary(kpi=kpi)
             }
             history = []
             for date in unique_dates:
