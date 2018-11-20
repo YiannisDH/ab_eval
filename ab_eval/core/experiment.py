@@ -376,7 +376,13 @@ class experiment(object):
         :return: true or false
         :rtype:  bool
         """
-        if (set(self.data[self.variations.column_name]) == {self.variations.variation_label, self.variations.control_label})\
-                and (self.data[self.variations.column_name].nunique() * self.data[self.date_column].nunique() == len(self.data.index)):
+
+        if self.segments is None:
+
+            if (set(self.data[self.variations.column_name]) == {self.variations.variation_label, self.variations.control_label})\
+                    and (self.data[self.variations.column_name].nunique() * self.data[self.date_column].nunique() == len(self.data.index)):
+                return True
+        else:
+            logging.info("Be aware that the validity check is not working if you have segments in your data. It always returns True.")
             return True
         return False
