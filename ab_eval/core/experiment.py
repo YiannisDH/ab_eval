@@ -2,7 +2,7 @@ import simplejson
 import json
 import logging
 from ab_eval.core.experiment_components import variations, evaluation_metrics
-from ab_eval.core.utils import get_test_summary, get_standard_error, get_z_val
+from ab_eval.core.utils import get_test_summary, get_standard_error, get_z_val, get_standard_deviation
 import statsmodels.api as sm
 import numpy as np
 
@@ -248,15 +248,17 @@ class experiment(object):
 
         M1 = df_summary['rate'][self.variations.variation_label]
         M2 = df_summary['rate'][self.variations.control_label]
+        N1 = df_summary['total'][self.variations.variation_label]
+        N2 = df_summary['total'][self.variations.control_label]
         z = get_z_val(sig_level=self.significance_level, two_tailed=True if self.alternative == 'two-sided' else False)
-        errors = self.get_standard_errors_of_test(kpi=kpi, segment=segment, segment_column=segment_column)
-        std1 = errors.get('control_standard_error')
-        std2 = errors.get('variation_standard_error')
+        std1 = get_standard_deviation(M1)
+        std2 = get_standard_deviation(M2)
         std1 *= std1
         std2 *= std2
         Sm1_m2 = (np.sqrt((std1 + std2 / (2 / (1 / M1 + 1 / M2)))))
+        SE1_2 = Sm1_m2(np.sqrt(1 / N1 + 1 / N2))
 
-        return {"lower_limit": M1 - M2 - z * Sm1_m2, "upper_limit": M1 - M2 + z * Sm1_m2}
+        return {"lower_limit": M1 - M2 - z * SE1_2, "upper_limit": M1 - M2 + z * SE1_2}
 
     def analyze(self, kpis=None, analyze_segments=False, date=None):
         """
