@@ -257,8 +257,8 @@ class experiment(object):
         # std2 *= std2
         Sm1_m2 = np.sqrt(((N1 - 1) * pow(std1, 2) + (N2 - 1) * pow(std2, 2)) / (N1 + N2 - 2) )
         SE1_2 = Sm1_m2 * (np.sqrt(1 / N1 + 1 / N2))
-        logging.info("pppppeeeeeeeooooooos")
-        return {"lower_limit": (M1 - M2) - (z * SE1_2), "upper_limit": (M1 - M2) + (z * SE1_2)}
+        logging.info("11111111")
+        return {"lower_limit": abs(M1 - M2) - (z * SE1_2), "upper_limit": abs(M1 - M2) + (z * SE1_2)}
 
     def analyze(self, kpis=None, analyze_segments=False, date=None):
         """
