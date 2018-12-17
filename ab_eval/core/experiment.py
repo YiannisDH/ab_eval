@@ -253,13 +253,10 @@ class experiment(object):
         z = get_z_val(sig_level=self.significance_level, two_tailed=True if self.alternative == 'two-sided' else False)
         std1 = get_standard_deviation(M1)
         std2 = get_standard_deviation(M2)
-        # std1 *= std1
-        # std2 *= std2
         Sm1_m2 = np.sqrt(((N1 - 1) * pow(std1, 2) + (N2 - 1) * pow(std2, 2)) / (N1 + N2 - 2) )
         SE1_2 = Sm1_m2 * (np.sqrt(1 / N1 + 1 / N2))
-        logging.info("44444")
         uplift = self.get_relative_conversion_uplift(kpi=kpi, segment=segment, segment_column=segment_column, date=date)
-        return {"lower_limit": (uplift) - (z * SE1_2), "upper_limit": (uplift) + (z * SE1_2)}
+        return {"lower_limit": uplift - (z * SE1_2), "upper_limit": uplift + (z * SE1_2)}
 
     def analyze(self, kpis=None, analyze_segments=False, date=None):
         """
