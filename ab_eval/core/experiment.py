@@ -256,7 +256,7 @@ class experiment(object):
         std1 *= std1
         std2 *= std2
         Sm1_m2 = (np.sqrt(((N1 - 1) * pow(std1, 2) + (N2-1) * pow(std2, 2)) / (N1 + N2 - 2) ) )
-        SE1_2 = Sm1_m2(np.sqrt(1 / N1 + 1 / N2))
+        SE1_2 = Sm1_m2 * (np.sqrt(1 / N1 + 1 / N2))
 
         return {"lower_limit": M1 - M2 - z * SE1_2, "upper_limit": M1 - M2 + z * SE1_2}
 
