@@ -2,7 +2,7 @@ import simplejson
 import json
 import logging
 from ab_eval.core.experiment_components import variations, evaluation_metrics
-from ab_eval.core.utils import get_test_summary, get_standard_error, get_z_val
+from ab_eval.core.utils import get_test_summary, get_standard_error, get_z_val, get_standard_deviation
 import statsmodels.api as sm
 import numpy as np
 
@@ -131,7 +131,7 @@ class experiment(object):
                                           variations_column=self.variations.get_column_name())
 
         return (df_summary['rate'][self.variations.variation_label] - df_summary['rate'][self.variations.control_label]) / \
-            df_summary['rate'][self.variations.control_label]
+                df_summary['rate'][self.variations.control_label]
 
     def get_standard_errors_of_test(self, kpi='CVR', segment=None, segment_column='segment', date=None):
         """
@@ -248,15 +248,15 @@ class experiment(object):
 
         M1 = df_summary['rate'][self.variations.variation_label]
         M2 = df_summary['rate'][self.variations.control_label]
+        N1 = df_summary['total'][self.variations.variation_label]
+        N2 = df_summary['total'][self.variations.control_label]
         z = get_z_val(sig_level=self.significance_level, two_tailed=True if self.alternative == 'two-sided' else False)
-        errors = self.get_standard_errors_of_test(kpi=kpi, segment=segment, segment_column=segment_column)
-        std1 = errors.get('control_standard_error')
-        std2 = errors.get('variation_standard_error')
-        std1 *= std1
-        std2 *= std2
-        Sm1_m2 = (np.sqrt((std1 + std2 / (2 / (1 / M1 + 1 / M2)))))
-
-        return {"lower_limit": M1 - M2 - z * Sm1_m2, "upper_limit": M1 - M2 + z * Sm1_m2}
+        std1 = get_standard_deviation(M1)
+        std2 = get_standard_deviation(M2)
+        Sm1_m2 = np.sqrt(((N1 - 1) * pow(std1, 2) + (N2 - 1) * pow(std2, 2)) / (N1 + N2 - 2))
+        SE1_2 = Sm1_m2 * (np.sqrt(1 / N1 + 1 / N2))
+        uplift = self.get_relative_conversion_uplift(kpi=kpi, segment=segment, segment_column=segment_column, date=date)
+        return {"lower_limit": uplift - (z * SE1_2), "upper_limit": uplift + (z * SE1_2)}
 
     def analyze(self, kpis=None, analyze_segments=False, date=None):
         """
