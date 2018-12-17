@@ -131,7 +131,7 @@ class experiment(object):
                                           variations_column=self.variations.get_column_name())
 
         return (df_summary['rate'][self.variations.variation_label] - df_summary['rate'][self.variations.control_label]) / \
-            df_summary['rate'][self.variations.control_label]
+                df_summary['rate'][self.variations.control_label]
 
     def get_standard_errors_of_test(self, kpi='CVR', segment=None, segment_column='segment', date=None):
         """
